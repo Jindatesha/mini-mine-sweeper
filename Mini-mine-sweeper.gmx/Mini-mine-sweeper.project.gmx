@@ -5,9 +5,22 @@
   </Configs>
   <NewExtensions/>
   <sounds name="sound"/>
-  <sprites name="sprites"/>
+  <sprites name="sprites">
+    <sprite>sprites\spr_background</sprite>
+    <sprite>sprites\spr_flag</sprite>
+    <sprite>sprites\spr_tile_block</sprite>
+  </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
+  <fonts name="fonts">
+    <font>fonts\font_pricedown</font>
+  </fonts>
+  <objects name="objects">
+    <object>objects\obj_game</object>
+  </objects>
+  <rooms name="rooms">
+    <room>rooms\room_play</room>
+  </rooms>
   <help>
     <rtf>help.rtf</rtf>
   </help>
