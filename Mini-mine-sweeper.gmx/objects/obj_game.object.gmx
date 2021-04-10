@@ -4,7 +4,7 @@
   <solid>0</solid>
   <visible>-1</visible>
   <depth>0</depth>
-  <persistent>0</persistent>
+  <persistent>-1</persistent>
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
   <events>
@@ -25,10 +25,100 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>number_color_1 = make_colour_rgb(32, 65, 141);
-number_color_2 = make_colour_rgb(108, 35, 135);
-number_color_3 = make_colour_rgb(159, 36, 66);
+            <string>
 
+
+
+enum UNDERTILE_TYPE
+{    
+    BLANK,
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+    FIVE,
+    SIX,
+    SEVEN,
+    EIGHT,
+    BOMB
+}
+
+enum OVERTILE_TYPE
+{
+    BLANK,
+    FLAGGED,
+    REVEALED
+}
+
+
+
+
+
+number_colors_array[0] = make_colour_rgb(25, 168, 173);
+number_colors_array[1] = make_colour_rgb(25, 133, 173);
+number_colors_array[2] = make_colour_rgb(36, 103, 159);
+number_colors_array[3] = make_colour_rgb(36, 43, 159);
+number_colors_array[4] = make_colour_rgb(108, 35, 135);
+number_colors_array[5] = make_colour_rgb(155, 28, 143);
+number_colors_array[6] = make_colour_rgb(159, 36, 66);
+number_colors_array[7] = make_colour_rgb(174, 21, 21);
+
+//set font and alignment
+draw_set_font(font_pricedown);
+draw_set_halign(fa_center);
+draw_set_valign(fa_middle);
+
+//initialize our grid
+globalvar the_undertile_grid,overtile_grid,tile_size,board_w,board_h,room_to_swap_id;
+the_undertile_grid = ds_grid_create(0,0);
+overtile_grid = ds_grid_create(0,0);
+tile_size = 32; //32x32
+board_w = 0;
+board_h = 0;
+room_to_swap_id = room_play_2;
+
+//setup game
+scr_new_game(5,6);
+
+
+
+
+
+
+
+
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="7" enumb="4">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>var what_room = room;
+var new_room_w = board_w * tile_size;
+var new_room_h = (board_h + 1) * tile_size;
+window_set_size(new_room_w,new_room_h);
+
+view_wport[0] = new_room_w;
+view_hport[0] = new_room_h;
+view_wview[0] = new_room_w;
+view_hview[0] = new_room_h;
 </string>
           </argument>
         </arguments>
@@ -53,6 +143,58 @@ number_color_3 = make_colour_rgb(159, 36, 66);
             <kind>1</kind>
             <string>//draw background
 draw_sprite_tiled(spr_background,0,0,0);
+
+//draw the top HUD
+//backing
+draw_sprite_stretched(spr_ui_backing,0,0,0,room_width,tile_size);
+
+//timer backing
+var timer_backing_x = tile_size * 1;
+var timer_backing_y = round(tile_size * 0.5);
+draw_sprite(spr_ui_timer_backing,0,timer_backing_x,timer_backing_y);
+
+//score backing
+var score_backing_x = tile_size * 2.5;
+draw_sprite(spr_ui_score_backing,0,score_backing_x,timer_backing_y);
+
+//flag on/off toggle button
+var flag_toggle_backing_x = tile_size * 4;
+draw_sprite(spr_ui_add_flag_button,0,flag_toggle_backing_x,timer_backing_y);
+
+//settings button
+var settings_button_backing_x = tile_size * 5;
+draw_sprite(spr_ui_settings_button,0,settings_button_backing_x,timer_backing_y);
+
+
+//draw the board
+
+
+for(var tx = 0; tx &lt; board_w; tx += 1;)
+{
+    for(var ty = 0; ty &lt; board_h; ty += 1;)
+    {
+        var top_tile_type = ds_grid_get(overtile_grid,tx,ty);
+        if (top_tile_type != OVERTILE_TYPE.REVEALED)
+        {
+            draw_sprite(spr_tile_block,top_tile_type,tx * tile_size,ty * tile_size);
+        }
+        else
+        {
+            var bot_tile_type = ds_grid_get(the_undertile_grid,tx,ty);
+            if (bot_tile_type == UNDERTILE_TYPE.BOMB)
+            {
+                draw_sprite(spr_bomb,0,tx * tile_size,ty * tile_size);
+            }
+            else
+            {
+                draw_set_color(number_colors_array[bot_tile_type]);
+                draw_text(tx * tile_size + round(tile_size/2),ty * tile_size + round(tile_size/2), string(bot_tile_type));
+                draw_set_color(c_white);
+             }
+            
+        }
+    }
+}
 
 
 
