@@ -14,11 +14,11 @@
     <sprite>sprites\spr_ui_timer_backing</sprite>
     <sprite>sprites\spr_ui_score_backing</sprite>
     <sprite>sprites\spr_ui_backing</sprite>
-    <sprite>sprites\spr_ui_add_flag_button</sprite>
   </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
   <scripts name="scripts">
+    <script>scripts\scr_reveal_undertile.gml</script>
     <script>scripts\scr_new_game.gml</script>
   </scripts>
   <fonts name="fonts">

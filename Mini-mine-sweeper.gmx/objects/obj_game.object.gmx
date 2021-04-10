@@ -25,7 +25,8 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>
+            <string>//randomize our seed (for true random values every start of game)
+randomize();
 
 
 
@@ -69,16 +70,73 @@ draw_set_halign(fa_center);
 draw_set_valign(fa_middle);
 
 //initialize our grid
-globalvar the_undertile_grid,overtile_grid,tile_size,board_w,board_h,room_to_swap_id;
-the_undertile_grid = ds_grid_create(0,0);
+globalvar undertile_grid,overtile_grid,tile_size,board_w,board_h,room_to_swap_id,window_scale;
+undertile_grid = ds_grid_create(0,0);
 overtile_grid = ds_grid_create(0,0);
-tile_size = 32; //32x32
+tile_size = 64; //64x64
 board_w = 0;
 board_h = 0;
 room_to_swap_id = room_play_2;
+window_scale = 1;
 
 //setup game
 scr_new_game(5,6);
+
+
+
+
+
+
+
+
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="3" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>
+
+//if we click on one of the boards tiles
+
+var current_mouse_over_in_tiles_x = mouse_x div tile_size;
+var current_mouse_over_in_tiles_y = mouse_y div tile_size;
+
+if mouse_check_button_pressed(mb_left)
+{
+    //is it one of the boards tiles
+    if (current_mouse_over_in_tiles_y &gt; 0)
+    {
+        var tx = current_mouse_over_in_tiles_x;
+        var ty = current_mouse_over_in_tiles_y - 1;
+        var this_overtile_type = ds_grid_get(overtile_grid,tx,ty);
+        
+        //if this boards OVERTILE wasnt revealed
+        if (this_overtile_type != OVERTILE_TYPE.REVEALED)
+        {
+            //reveal tile and see what happens
+            scr_reveal_undertile(tx,ty);
+        }
+    }
+}
+
 
 
 
@@ -111,8 +169,8 @@ scr_new_game(5,6);
           <argument>
             <kind>1</kind>
             <string>var what_room = room;
-var new_room_w = board_w * tile_size;
-var new_room_h = (board_h + 1) * tile_size;
+var new_room_w = board_w * tile_size * window_scale;
+var new_room_h = board_h * tile_size * window_scale;
 window_set_size(new_room_w,new_room_h);
 
 view_wport[0] = new_room_w;
@@ -149,7 +207,7 @@ draw_sprite_tiled(spr_background,0,0,0);
 draw_sprite_stretched(spr_ui_backing,0,0,0,room_width,tile_size);
 
 //timer backing
-var timer_backing_x = tile_size * 1;
+var timer_backing_x = tile_size * 0.5;
 var timer_backing_y = round(tile_size * 0.5);
 draw_sprite(spr_ui_timer_backing,0,timer_backing_x,timer_backing_y);
 
@@ -157,18 +215,13 @@ draw_sprite(spr_ui_timer_backing,0,timer_backing_x,timer_backing_y);
 var score_backing_x = tile_size * 2.5;
 draw_sprite(spr_ui_score_backing,0,score_backing_x,timer_backing_y);
 
-//flag on/off toggle button
-var flag_toggle_backing_x = tile_size * 4;
-draw_sprite(spr_ui_add_flag_button,0,flag_toggle_backing_x,timer_backing_y);
 
 //settings button
-var settings_button_backing_x = tile_size * 5;
+var settings_button_backing_x = tile_size * 4.25;
 draw_sprite(spr_ui_settings_button,0,settings_button_backing_x,timer_backing_y);
 
 
 //draw the board
-
-
 for(var tx = 0; tx &lt; board_w; tx += 1;)
 {
     for(var ty = 0; ty &lt; board_h; ty += 1;)
@@ -176,20 +229,23 @@ for(var tx = 0; tx &lt; board_w; tx += 1;)
         var top_tile_type = ds_grid_get(overtile_grid,tx,ty);
         if (top_tile_type != OVERTILE_TYPE.REVEALED)
         {
-            draw_sprite(spr_tile_block,top_tile_type,tx * tile_size,ty * tile_size);
+            draw_sprite(spr_tile_block,top_tile_type,tx * tile_size,ty * tile_size + (1 * tile_size));
         }
         else
         {
-            var bot_tile_type = ds_grid_get(the_undertile_grid,tx,ty);
+            var bot_tile_type = ds_grid_get(undertile_grid,tx,ty);
             if (bot_tile_type == UNDERTILE_TYPE.BOMB)
             {
-                draw_sprite(spr_bomb,0,tx * tile_size,ty * tile_size);
+                draw_sprite(spr_bomb,0,tx * tile_size,ty * tile_size + (1 * tile_size));
             }
             else
             {
-                draw_set_color(number_colors_array[bot_tile_type]);
-                draw_text(tx * tile_size + round(tile_size/2),ty * tile_size + round(tile_size/2), string(bot_tile_type));
-                draw_set_color(c_white);
+                if (bot_tile_type != UNDERTILE_TYPE.BLANK)
+                {
+                    draw_set_color(number_colors_array[bot_tile_type]);
+                    draw_text(tx * tile_size + round(tile_size/2),ty * tile_size + round(tile_size/2) + (1 * tile_size), string(bot_tile_type));
+                    draw_set_color(c_white);
+                }
              }
             
         }
@@ -198,6 +254,29 @@ for(var tx = 0; tx &lt; board_w; tx += 1;)
 
 
 
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="9" enumb="82">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>game_restart();
 </string>
           </argument>
         </arguments>

@@ -2,23 +2,23 @@
 <sprite>
   <type>0</type>
   <xorig>0</xorig>
-  <yorigin>12</yorigin>
+  <yorigin>25</yorigin>
   <colkind>1</colkind>
   <coltolerance>0</coltolerance>
   <sepmasks>0</sepmasks>
   <bboxmode>0</bboxmode>
   <bbox_left>0</bbox_left>
-  <bbox_right>34</bbox_right>
+  <bbox_right>70</bbox_right>
   <bbox_top>0</bbox_top>
-  <bbox_bottom>24</bbox_bottom>
+  <bbox_bottom>49</bbox_bottom>
   <HTile>0</HTile>
   <VTile>0</VTile>
   <TextureGroups>
     <TextureGroup0>0</TextureGroup0>
   </TextureGroups>
   <For3D>0</For3D>
-  <width>35</width>
-  <height>25</height>
+  <width>71</width>
+  <height>50</height>
   <frames>
     <frame index="0">images\spr_ui_score_backing_0.png</frame>
   </frames>
