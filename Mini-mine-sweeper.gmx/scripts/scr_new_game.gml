@@ -31,7 +31,7 @@ for(var tx = 0; tx < board_w; tx += 1;)
 
 //get difficulty/total bombs
 var total_tiles_on_board = board_w * board_h;
-var total_bombs = floor((total_tiles_on_board)/0) + 1;//was 6
+var total_bombs = floor((total_tiles_on_board)/7) + 1;
 var bombs_left_to_place = total_bombs;
 var this_tiles_bomb_placement_chance = total_bombs/total_tiles_on_board;
 

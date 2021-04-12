@@ -69,7 +69,7 @@ draw_set_font(font_pricedown);
 draw_set_halign(fa_center);
 draw_set_valign(fa_middle);
 
-//initialize our grid
+//initialize globals
 globalvar undertile_grid,overtile_grid,tile_size,board_w,board_h,room_to_swap_id,window_scale;
 undertile_grid = ds_grid_create(0,0);
 overtile_grid = ds_grid_create(0,0);
@@ -79,15 +79,27 @@ board_h = 0;
 room_to_swap_id = room_play_2;
 window_scale = 1;
 
+
+
+
+//initialize locals
+total_time = 0;
+font_id = font_pricedown;
+font_embedded_padding_x = 0;
+font_embedded_padding_y = -4;
+
+total_score = 0;
+can_reveal_tiles = true;
+timer_paused = false;
+dropdown_active = false;
+board_sizes_grid = ds_grid_create(0,0);
+scr_add_board_size(6,5);
+scr_add_board_size(8,7);
+scr_add_board_size(12,6);
+
+
 //setup game
 scr_new_game(5,6);
-
-
-
-
-
-
-
 
 
 </string>
@@ -119,7 +131,11 @@ scr_new_game(5,6);
 var current_mouse_over_in_tiles_x = mouse_x div tile_size;
 var current_mouse_over_in_tiles_y = mouse_y div tile_size;
 
-if mouse_check_button_pressed(mb_left)
+//left pressed = 1; right pressed = -1;  both/neither pressed = 0;
+var mouse_button_pressed = mouse_check_button_pressed(mb_left) - mouse_check_button_pressed(mb_right);
+
+
+if (can_reveal_tiles == true and mouse_button_pressed != 0)
 {
     //is it one of the boards tiles
     if (current_mouse_over_in_tiles_y &gt; 0)
@@ -131,8 +147,30 @@ if mouse_check_button_pressed(mb_left)
         //if this boards OVERTILE wasnt revealed
         if (this_overtile_type != OVERTILE_TYPE.REVEALED)
         {
-            //reveal tile and see what happens
-            scr_reveal_undertile(tx,ty);
+            //left mouse was pressed
+            if (mouse_button_pressed == 1)
+            {
+                //reveal tile and see what happens
+                scr_reveal_undertile(tx,ty);
+            }
+            else
+            {
+                //right mouse was pressed
+                
+                if (this_overtile_type == OVERTILE_TYPE.FLAGGED)
+                {
+                    //un-flag that tile
+                    ds_grid_set(overtile_grid,tx,ty,OVERTILE_TYPE.BLANK);
+                }
+                else
+                {   
+                    //flag that tile
+                    ds_grid_set(overtile_grid,tx,ty,OVERTILE_TYPE.FLAGGED);
+                    
+                    //now check to see if we have revealed all of the tiles
+                    scr_check_if_game_over();  
+                }          
+            }
         }
     }
 }
@@ -177,6 +215,15 @@ view_wport[0] = new_room_w;
 view_hport[0] = new_room_h;
 view_wview[0] = new_room_w;
 view_hview[0] = new_room_h;
+
+
+can_reveal_tiles = true;
+timer_paused = false;
+
+draw_set_color(c_white);
+
+
+
 </string>
           </argument>
         </arguments>
@@ -209,19 +256,47 @@ draw_sprite_stretched(spr_ui_backing,0,0,0,room_width,tile_size);
 //timer backing
 var timer_backing_x = tile_size * 0.5;
 var timer_backing_y = round(tile_size * 0.5);
+draw_set_halign(fa_right);
 draw_sprite(spr_ui_timer_backing,0,timer_backing_x,timer_backing_y);
+
+if (timer_paused == false)
+{
+    total_time += 1/room_speed;
+}
+var h_padding = 5;
+draw_text(timer_backing_x + sprite_get_width(spr_ui_timer_backing) - h_padding + font_embedded_padding_x,timer_backing_y + font_embedded_padding_y,string(floor(total_time)));
 
 //score backing
 var score_backing_x = tile_size * 2.5;
 draw_sprite(spr_ui_score_backing,0,score_backing_x,timer_backing_y);
 
+draw_text(score_backing_x + sprite_get_width(spr_ui_score_backing) - h_padding + font_embedded_padding_x,timer_backing_y + font_embedded_padding_y,string(floor(total_score)));
 
 //settings button
 var settings_button_backing_x = tile_size * 4.25;
 draw_sprite(spr_ui_settings_button,0,settings_button_backing_x,timer_backing_y);
 
+//personal preference to have these two nested
+if (mouse_check_button_pressed(mb_left))
+{
+    var button_w = sprite_get_width(spr_ui_settings_button);
+    var button_h = sprite_get_height(spr_ui_settings_button);
+    var button_x = settings_button_backing_x - (button_w/2);// /2 because origin is in center
+    var button_y = timer_backing_y - (button_h/2);
+    
+    if (mouse_x &gt;= button_x and mouse_x &lt; button_x + button_w and mouse_y &gt;= button_y and mouse_y &lt; button_y + button_h)
+    {
+        //toggle that button
+        dropdown_active = !dropdown_active;
+    }
+}
+
+
+
+
 
 //draw the board
+draw_set_halign(fa_center);
 for(var tx = 0; tx &lt; board_w; tx += 1;)
 {
     for(var ty = 0; ty &lt; board_h; ty += 1;)
@@ -229,7 +304,13 @@ for(var tx = 0; tx &lt; board_w; tx += 1;)
         var top_tile_type = ds_grid_get(overtile_grid,tx,ty);
         if (top_tile_type != OVERTILE_TYPE.REVEALED)
         {
-            draw_sprite(spr_tile_block,top_tile_type,tx * tile_size,ty * tile_size + (1 * tile_size));
+            draw_sprite(spr_tile_block,0,tx * tile_size,ty * tile_size + (1 * tile_size));
+            
+            //if tile was flagged, draw a flag symbol on top
+            if (top_tile_type == OVERTILE_TYPE.FLAGGED)
+            {
+               draw_sprite(spr_flag,0,tx * tile_size + (tile_size/2),ty * tile_size + (1 * tile_size) + (tile_size/2)); 
+            }
         }
         else
         {
@@ -250,6 +331,44 @@ for(var tx = 0; tx &lt; board_w; tx += 1;)
             
         }
     }
+}
+
+
+
+
+
+
+
+//menu dropdown
+
+if (dropdown_active == true)
+{
+    //draw dropdown backing
+    var dropdown_w = tile_size * 3;
+    var dropdown_h = tile_size * 3;
+    var dropdown_x = board_w * tile_size - dropdown_w;
+    var dropdown_y = tile_size;
+    draw_sprite_stretched(spr_ui_dropdown_backing,0,dropdown_x,dropdown_y,dropdown_w,dropdown_h);
+
+    
+    //draw_buttons 
+    var button_w = sprite_get_width(spr_ui_dropdown_button_backing); 
+    var button_h = sprite_get_height(spr_ui_dropdown_button_backing);
+    
+    var total_different_board_sizes = ds_grid_height(board_sizes_grid);
+    var remaining_backing_amount = dropdown_h / (total_different_board_sizes + 1);
+    var space_between_buttons = remaining_backing_amount - ((remaining_backing_amount * 2)/(total_different_board_sizes + 1));
+    
+    
+    for(var i = 0; i &lt; total_different_board_sizes; i += 1;)
+    {
+        //button backing 
+        var this_button_x = dropdown_x + (dropdown_w/2);
+        var this_button_y = dropdown_y + (((space_between_buttons) * (i + 1))); //the "+1" is for padding
+        draw_sprite(spr_ui_dropdown_button_backing,0,this_button_x,this_button_y);
+    }
+
+
 }
 
 
@@ -277,6 +396,8 @@ for(var tx = 0; tx &lt; board_w; tx += 1;)
           <argument>
             <kind>1</kind>
             <string>game_restart();
+
+
 </string>
           </argument>
         </arguments>

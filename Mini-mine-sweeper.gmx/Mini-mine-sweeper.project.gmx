@@ -14,11 +14,16 @@
     <sprite>sprites\spr_ui_timer_backing</sprite>
     <sprite>sprites\spr_ui_score_backing</sprite>
     <sprite>sprites\spr_ui_backing</sprite>
+    <sprite>sprites\spr_ui_dropdown_backing</sprite>
+    <sprite>sprites\spr_ui_dropdown_button_backing</sprite>
   </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
   <scripts name="scripts">
     <script>scripts\scr_reveal_undertile.gml</script>
+    <script>scripts\scr_end_match.gml</script>
+    <script>scripts\scr_check_if_game_over.gml</script>
+    <script>scripts\scr_add_board_size.gml</script>
     <script>scripts\scr_new_game.gml</script>
   </scripts>
   <fonts name="fonts">
