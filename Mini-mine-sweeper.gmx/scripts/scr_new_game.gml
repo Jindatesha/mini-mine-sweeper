@@ -3,11 +3,11 @@ var room_in_tiles_w = argument[0];
 var room_in_tiles_h = argument[1];
 
 board_w = room_in_tiles_w; //as int or whole number
-board_h = room_in_tiles_h - 1;//as int or whole number
+board_h = room_in_tiles_h;//as int or whole number
 
 //also resize the room
 var new_room_w = room_in_tiles_w * tile_size;
-var new_room_h = room_in_tiles_h * tile_size;
+var new_room_h = (room_in_tiles_h + 1) * tile_size; //+ 1 to account for top hud bar
 
 
 
@@ -31,7 +31,7 @@ for(var tx = 0; tx < board_w; tx += 1;)
 
 //get difficulty/total bombs
 var total_tiles_on_board = board_w * board_h;
-var total_bombs = floor((total_tiles_on_board)/7) + 1;
+var total_bombs = floor((total_tiles_on_board)/6) + 1;
 var bombs_left_to_place = total_bombs;
 var this_tiles_bomb_placement_chance = total_bombs/total_tiles_on_board;
 
@@ -111,10 +111,11 @@ for(var tx = 0; tx < board_w; tx += 1;)
 
 
 
+//reset score, timer and close menu
 
 
 //at very end...swap rooms
-room_goto(room_play_2);
+room_goto(room_to_swap_id);
 //room_to_swap_id = room;
 
 

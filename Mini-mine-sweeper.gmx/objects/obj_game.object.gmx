@@ -70,7 +70,6 @@ draw_set_halign(fa_center);
 draw_set_valign(fa_middle);
 
 //initialize globals
-globalvar undertile_grid,overtile_grid,tile_size,board_w,board_h,room_to_swap_id,window_scale;
 undertile_grid = ds_grid_create(0,0);
 overtile_grid = ds_grid_create(0,0);
 tile_size = 64; //64x64
@@ -83,23 +82,24 @@ window_scale = 1;
 
 
 //initialize locals
-total_time = 0;
 font_id = font_pricedown;
 font_embedded_padding_x = 0;
 font_embedded_padding_y = -4;
 
-total_score = 0;
-can_reveal_tiles = true;
-timer_paused = false;
-dropdown_active = false;
-board_sizes_grid = ds_grid_create(0,0);
-scr_add_board_size(6,5);
+
+scr_reset_match_variables();
+
+
+board_sizes_grid = ds_grid_create(2,0);
+scr_add_board_size(5,5);
 scr_add_board_size(8,7);
 scr_add_board_size(12,6);
 
 
 //setup game
-scr_new_game(5,6);
+scr_new_game(5,5);
+
+
 
 
 </string>
@@ -206,19 +206,28 @@ if (can_reveal_tiles == true and mouse_button_pressed != 0)
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>var what_room = room;
+            <string>if room == room_play_1 room_to_swap_id = room_play_2 else room_to_swap_id = room_play_1;
+
 var new_room_w = board_w * tile_size * window_scale;
 var new_room_h = board_h * tile_size * window_scale;
 window_set_size(new_room_w,new_room_h);
+surface_resize(application_surface,new_room_w,new_room_h);
 
 view_wport[0] = new_room_w;
 view_hport[0] = new_room_h;
 view_wview[0] = new_room_w;
 view_hview[0] = new_room_h;
 
-
-can_reveal_tiles = true;
-timer_paused = false;
+if (has_triggered_bomb_on_first_tile == true)
+{
+    is_first_tile_clicked = true;
+    has_triggered_bomb_on_first_tile = false;
+    scr_reveal_undertile(triggered_bomb_pos[0],triggered_bomb_pos[1]);
+}
+else
+{
+    scr_reset_match_variables();
+}
 
 draw_set_color(c_white);
 
@@ -273,7 +282,7 @@ draw_sprite(spr_ui_score_backing,0,score_backing_x,timer_backing_y);
 draw_text(score_backing_x + sprite_get_width(spr_ui_score_backing) - h_padding + font_embedded_padding_x,timer_backing_y + font_embedded_padding_y,string(floor(total_score)));
 
 //settings button
-var settings_button_backing_x = tile_size * 4.25;
+var settings_button_backing_x = room_width - (tile_size * .6);
 draw_sprite(spr_ui_settings_button,0,settings_button_backing_x,timer_backing_y);
 
 //personal preference to have these two nested
@@ -288,6 +297,13 @@ if (mouse_check_button_pressed(mb_left))
     {
         //toggle that button
         dropdown_active = !dropdown_active;
+        
+        //toggle ability to change tiles
+        can_reveal_tiles = !can_reveal_tiles;
+        
+        //play sound effect
+        var snd = snd_ui_click;
+        audio_play_sound(snd,0,false);
     }
 }
 
@@ -343,6 +359,8 @@ for(var tx = 0; tx &lt; board_w; tx += 1;)
 
 if (dropdown_active == true)
 {
+   
+    
     //draw dropdown backing
     var dropdown_w = tile_size * 3;
     var dropdown_h = tile_size * 3;
@@ -356,16 +374,44 @@ if (dropdown_active == true)
     var button_h = sprite_get_height(spr_ui_dropdown_button_backing);
     
     var total_different_board_sizes = ds_grid_height(board_sizes_grid);
-    var remaining_backing_amount = dropdown_h / (total_different_board_sizes + 1);
-    var space_between_buttons = remaining_backing_amount - ((remaining_backing_amount * 2)/(total_different_board_sizes + 1));
     
+    var starting_cut = dropdown_h / (total_different_board_sizes + 1);
+    var remaining_backing_amount = dropdown_h - (button_h * total_different_board_sizes);
+    var remaining_amount_divided = remaining_backing_amount/(total_different_board_sizes + 1);
+    
+    draw_set_halign(fa_center);
     
     for(var i = 0; i &lt; total_different_board_sizes; i += 1;)
     {
         //button backing 
         var this_button_x = dropdown_x + (dropdown_w/2);
-        var this_button_y = dropdown_y + (((space_between_buttons) * (i + 1))); //the "+1" is for padding
-        draw_sprite(spr_ui_dropdown_button_backing,0,this_button_x,this_button_y);
+        var this_button_y = round(dropdown_y + (((starting_cut + remaining_amount_divided) * i) - remaining_amount_divided + starting_cut)); //the "+1" is for padding
+        var this_button_scale = 1;
+         //board dimensions
+        var this_buttons_board_w = ds_grid_get(board_sizes_grid,0,i);
+        var this_buttons_board_h = ds_grid_get(board_sizes_grid,1,i);
+        
+        //if mouse is hovered over this button
+        if (mouse_x &gt;= this_button_x - (button_w/2) and mouse_x &lt;= this_button_x + (button_w/2) and mouse_y &gt;= this_button_y - (button_h/2) and mouse_y &lt;= this_button_y + (button_h/2))
+        {
+            this_button_scale = 1.2;
+            
+            if (mouse_check_button_pressed(mb_left))
+            {
+                //play sound effect
+                var snd = snd_ui_click;
+                audio_play_sound(snd,0,false);
+            
+                //start new board
+                scr_new_game(this_buttons_board_w,this_buttons_board_h);              
+            }
+        }
+        
+        
+        draw_sprite_ext(spr_ui_dropdown_button_backing,0,this_button_x,this_button_y,this_button_scale,this_button_scale,0,c_white,1);
+        
+       
+        draw_text_transformed(this_button_x,this_button_y + font_embedded_padding_y,string(this_buttons_board_w) + " x " + string(this_buttons_board_h),this_button_scale,this_button_scale,0);
     }
 
 

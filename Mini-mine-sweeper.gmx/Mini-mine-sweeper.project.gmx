@@ -4,7 +4,10 @@
     <Config>Configs\Default</Config>
   </Configs>
   <NewExtensions/>
-  <sounds name="sound"/>
+  <sounds name="sound">
+    <sound>sound\snd_ui_click</sound>
+    <sound>sound\snd_tile_click</sound>
+  </sounds>
   <sprites name="sprites">
     <sprite>sprites\spr_background</sprite>
     <sprite>sprites\spr_flag</sprite>
@@ -24,6 +27,7 @@
     <script>scripts\scr_end_match.gml</script>
     <script>scripts\scr_check_if_game_over.gml</script>
     <script>scripts\scr_add_board_size.gml</script>
+    <script>scripts\scr_reset_match_variables.gml</script>
     <script>scripts\scr_new_game.gml</script>
   </scripts>
   <fonts name="fonts">
