@@ -3,6 +3,7 @@
 var tx = argument[0];
 var ty = argument[1];
 
+
 if (can_reveal_tiles == true)
 {
     //set the overtile type to revealed
@@ -23,6 +24,10 @@ if (can_reveal_tiles == true)
             }
             else
             {
+                //play flag place sound                
+                var snd = snd_bomb_reveal;
+                audio_play_sound(snd,0,false);
+                    
                 scr_end_match();
             }
             
@@ -31,11 +36,12 @@ if (can_reveal_tiles == true)
         case UNDERTILE_TYPE.BLANK:
             //else if blank...reveal all connected blank undertiles
            
+            
             //see what type is each of the cross pattern (4 tiles in t) 
             var to_check_blanks_grid = ds_grid_create(2,1);
             ds_grid_set(to_check_blanks_grid,0,0,tx);
             ds_grid_set(to_check_blanks_grid,1,0,ty);
-                     
+           
                  
             while(ds_grid_height(to_check_blanks_grid) > 0)
             {
@@ -67,6 +73,7 @@ if (can_reveal_tiles == true)
                                     {
                                         //then reveal it!
                                         ds_grid_set(overtile_grid,fsx,fsy,OVERTILE_TYPE.REVEALED); 
+                                        
                                         
                                         if (this_surrounding_undertile_type == UNDERTILE_TYPE.BLANK)
                                         {
@@ -105,6 +112,7 @@ if (can_reveal_tiles == true)
         default:
             //add to our scoreboard
             total_score += this_undertile_type;
+            
         break;
         
     }
@@ -118,10 +126,11 @@ if (can_reveal_tiles == true)
 is_first_tile_clicked = false;
 
 
-if (has_triggered_bomb_on_first_tile == false)
+if (is_game_over == false and  has_triggered_bomb_on_first_tile == false)
 {
-    //play sound effect
+    //play sound effect 
     var snd = snd_tile_click;
+    audio_sound_pitch(snd,random_range(0.8,1.2));
     audio_play_sound(snd,0,false);
 }
 

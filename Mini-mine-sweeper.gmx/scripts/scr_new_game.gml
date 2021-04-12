@@ -9,8 +9,6 @@ board_h = room_in_tiles_h;//as int or whole number
 var new_room_w = room_in_tiles_w * tile_size;
 var new_room_h = (room_in_tiles_h + 1) * tile_size; //+ 1 to account for top hud bar
 
-
-
 room_set_width(room_to_swap_id,new_room_w);
 room_set_height(room_to_swap_id,new_room_h);
 

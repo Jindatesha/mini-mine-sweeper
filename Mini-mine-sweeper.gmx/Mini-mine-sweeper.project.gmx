@@ -7,6 +7,8 @@
   <sounds name="sound">
     <sound>sound\snd_ui_click</sound>
     <sound>sound\snd_tile_click</sound>
+    <sound>sound\snd_flag_place</sound>
+    <sound>sound\snd_bomb_reveal</sound>
   </sounds>
   <sprites name="sprites">
     <sprite>sprites\spr_background</sprite>

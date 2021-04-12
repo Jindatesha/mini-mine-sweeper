@@ -69,7 +69,7 @@ draw_set_font(font_pricedown);
 draw_set_halign(fa_center);
 draw_set_valign(fa_middle);
 
-//initialize globals
+//initialize locals
 undertile_grid = ds_grid_create(0,0);
 overtile_grid = ds_grid_create(0,0);
 tile_size = 64; //64x64
@@ -77,27 +77,26 @@ board_w = 0;
 board_h = 0;
 room_to_swap_id = room_play_2;
 window_scale = 1;
-
-
-
-
-//initialize locals
 font_id = font_pricedown;
 font_embedded_padding_x = 0;
 font_embedded_padding_y = -4;
+blink_timer = 0;
+timer_text_alpha = 1;
 
 
 scr_reset_match_variables();
 
 
 board_sizes_grid = ds_grid_create(2,0);
-scr_add_board_size(5,5);
+scr_add_board_size(5,4);
 scr_add_board_size(8,7);
 scr_add_board_size(12,6);
 
 
-//setup game
-scr_new_game(5,5);
+//setup game with board size 1
+var board_1_w = ds_grid_get(board_sizes_grid,0,0);
+var board_1_h = ds_grid_get(board_sizes_grid,1,0);
+scr_new_game(board_1_w,board_1_h);
 
 
 
@@ -167,6 +166,10 @@ if (can_reveal_tiles == true and mouse_button_pressed != 0)
                     //flag that tile
                     ds_grid_set(overtile_grid,tx,ty,OVERTILE_TYPE.FLAGGED);
                     
+                    //play flag place sound                
+                    var snd = snd_flag_place;
+                    audio_play_sound(snd,0,false);
+                    
                     //now check to see if we have revealed all of the tiles
                     scr_check_if_game_over();  
                 }          
@@ -209,8 +212,9 @@ if (can_reveal_tiles == true and mouse_button_pressed != 0)
             <string>if room == room_play_1 room_to_swap_id = room_play_2 else room_to_swap_id = room_play_1;
 
 var new_room_w = board_w * tile_size * window_scale;
-var new_room_h = board_h * tile_size * window_scale;
+var new_room_h = (board_h + 1) * tile_size * window_scale;
 window_set_size(new_room_w,new_room_h);
+
 surface_resize(application_surface,new_room_w,new_room_h);
 
 view_wport[0] = new_room_w;
@@ -272,8 +276,26 @@ if (timer_paused == false)
 {
     total_time += 1/room_speed;
 }
+
 var h_padding = 5;
-draw_text(timer_backing_x + sprite_get_width(spr_ui_timer_backing) - h_padding + font_embedded_padding_x,timer_backing_y + font_embedded_padding_y,string(floor(total_time)));
+var text_col = c_white; 
+
+if (is_game_over == true)
+{
+    blink_timer += 1;
+    
+    if (blink_timer &gt; (room_speed * 0.42))
+    {
+        timer_text_alpha = abs(timer_text_alpha - 1);//alternates between 0 and 1
+        blink_timer = 0;
+    }
+}
+else
+{
+    timer_text_alpha = 1;
+}
+
+draw_text_colour(timer_backing_x + sprite_get_width(spr_ui_timer_backing) - h_padding + font_embedded_padding_x,timer_backing_y + font_embedded_padding_y,string(floor(total_time)),text_col,text_col,text_col,text_col,timer_text_alpha);
 
 //score backing
 var score_backing_x = tile_size * 2.5;

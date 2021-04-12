@@ -5,7 +5,7 @@
 
 can_reveal_tiles = false;
 timer_paused = true;
-
+is_game_over = true;
 
 
 
